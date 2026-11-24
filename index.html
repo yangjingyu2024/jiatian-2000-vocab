@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="寂天英單2000" />
+  <title>寂天 心智圖神奇記憶國中英單 2000 — 上課教學與字卡自動播放系統</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app" class="app-shell">
+    <!-- Left Sidebar: Chapter 1-30 / Unit 1-133 Navigation & Search -->
+    <aside id="sidebar" class="sidebar" aria-label="章節與單元選單">
+      <div class="sidebar-header">
+        <div class="brand">
+          <div class="brand-badge">2000</div>
+          <div class="brand-text">
+            <h1>寂天國中英單 2000</h1>
+            <p id="book-stats-label">30 Chapters • 133 Units • 2,154 Words</p>
+          </div>
+        </div>
+        <button id="btn-close-sidebar-mobile" class="icon-btn mobile-only" type="button" title="關閉選單">✕</button>
+      </div>
+
+      <div class="search-box">
+        <span class="search-icon" aria-hidden="true">🔍</span>
+        <input
+          id="sidebar-search"
+          type="search"
+          placeholder="搜尋單元編號、主題或中英文單字…"
+          autocomplete="off"
+        />
+        <button id="btn-clear-search" class="clear-search-btn hidden" type="button" title="清除搜尋">✕</button>
+      </div>
+
+      <div id="word-search-results" class="word-search-results hidden" aria-live="polite"></div>
+
+      <nav id="chapter-nav" class="chapter-nav"></nav>
+    </aside>
+
+    <!-- Main Teaching Workspace -->
+    <div class="main-area">
+      <!-- Top Classroom Navigation & Mode Bar -->
+      <header id="topbar" class="topbar">
+        <div class="topbar-left">
+          <button id="btn-toggle-sidebar" class="btn btn-ghost" type="button" title="收合 / 展開章節選單">
+            ☰ <span class="hide-sm">選單</span>
+          </button>
+
+          <div class="unit-pager">
+            <button id="btn-prev-unit" class="btn btn-outline" type="button" title="上一單元">◀ <span class="hide-md">上一單元</span></button>
+            <div class="current-unit-pill">
+              <span id="hdr-ch-badge" class="ch-tag">Ch. 1</span>
+              <span id="hdr-unit-badge" class="unit-tag">Unit 001</span>
+              <span id="hdr-unit-title" class="unit-title-inline">人生階段</span>
+            </div>
+            <button id="btn-next-unit" class="btn btn-outline" type="button" title="下一單元"><span class="hide-md">下一單元</span> ▶</button>
+          </div>
+        </div>
+
+        <div class="mode-tabs" role="tablist" aria-label="教學模式切換">
+          <button class="mode-tab active" data-mode="mindmap" type="button" role="tab" aria-selected="true">
+            🗺️ 上課心智圖
+          </button>
+          <button class="mode-tab" data-mode="flashcard" type="button" role="tab" aria-selected="false">
+            🗂️ 單元字卡自動播放
+          </button>
+          <button class="mode-tab" data-mode="table" type="button" role="tab" aria-selected="false">
+            📋 單字總表與抽考
+          </button>
+        </div>
+
+        <div class="topbar-right">
+          <label class="tts-engine-label" title="選擇單字發音引擎">
+            <span class="hide-lg">發音：</span>
+            <select id="tts-engine-select" class="compact-select">
+              <option value="web_speech" selected>Web Speech 美式真人 (推薦)</option>
+              <option value="local_first">本地 WAV 優先 + Web Speech</option>
+            </select>
+          </label>
+          <button id="btn-fullscreen" class="btn btn-ghost" type="button" title="全螢幕投影">⛶ <span class="hide-lg">投影</span></button>
+        </div>
+      </header>
+
+      <!-- Content Views Container -->
+      <main class="workspace">
+        <!-- View 1: Classroom Mind Map Presentation -->
+        <section id="view-mindmap" class="view-panel active" aria-label="上課心智圖簡報">
+          <div class="unit-banner-card">
+            <div class="banner-image-wrap">
+              <img id="mm-banner-img" src="" alt="單元標題橫幅" />
+            </div>
+            <div class="banner-actions">
+              <div class="unit-meta-text">
+                <span id="mm-unit-meta" class="meta-kicker">Chapter 1 人物 • Unit 001 • 15 個單字</span>
+                <h2 id="mm-unit-heading">人生階段 Life Stages</h2>
+              </div>
+              <button id="btn-mm-start-flashcards" class="btn btn-primary btn-cta" type="button">
+                ▶ 一鍵自動播放本單元字卡
+              </button>
+            </div>
+          </div>
+
+          <div class="mindmap-toolbar">
+            <div class="segmented-control" role="group" aria-label="心智圖版本切換">
+              <button id="btn-mm-en" class="seg-btn" type="button">🇬🇧 全英心智圖（空白回憶）</button>
+              <button id="btn-mm-zh" class="seg-btn active" type="button">🇹🇼 中英對照心智圖（完整解答）</button>
+            </div>
+
+            <div class="zoom-controls">
+              <span class="toolbar-label">縮放：</span>
+              <button class="btn btn-sm btn-outline zoom-btn active" data-zoom="100" type="button">100%</button>
+              <button class="btn btn-sm btn-outline zoom-btn" data-zoom="125" type="button">125%</button>
+              <button class="btn btn-sm btn-outline zoom-btn" data-zoom="150" type="button">150%</button>
+              <button id="btn-mm-lightbox" class="btn btn-sm btn-secondary" type="button" title="全螢幕放大心智圖">
+                🔍 放大檢視
+              </button>
+            </div>
+
+            <div class="mp3-player" aria-label="課本單元音檔播放器">
+              <button id="btn-mp3-play" class="btn btn-sm btn-accent" type="button">▶ 課本音檔</button>
+              <input id="mp3-seek" class="mp3-seek" type="range" min="0" max="100" value="0" step="0.1" aria-label="音檔進度" />
+              <span id="mp3-time" class="mp3-time">00:00 / 00:00</span>
+              <select id="mp3-speed" class="compact-select" title="音檔播放速度">
+                <option value="0.75">0.75x</option>
+                <option value="0.9">0.9x</option>
+                <option value="1" selected>1.0x</option>
+                <option value="1.15">1.15x</option>
+                <option value="1.25">1.25x</option>
+              </select>
+              <button id="btn-mp3-loop" class="btn btn-sm btn-outline" type="button" title="循環播放本單元音檔">🔁</button>
+              <audio id="unit-mp3-audio" preload="none"></audio>
+            </div>
+          </div>
+
+          <div id="mindmap-stage" class="mindmap-stage">
+            <img id="mm-slide-img" src="" alt="單元心智圖投影片" title="點擊可全螢幕放大檢視" />
+          </div>
+
+          <div class="mindmap-word-strip-wrap">
+            <div class="strip-header">
+              <span>📌 本單元單字速點發音（<span id="mm-word-count">0</span> 字）</span>
+              <div class="strip-actions">
+                <button id="btn-toggle-mm-zh" class="btn btn-xs btn-outline" type="button">隱藏中文提示</button>
+                <button id="btn-mm-to-table" class="btn btn-xs btn-outline" type="button">查看單字總表 📋</button>
+              </div>
+            </div>
+            <div id="mm-word-chips" class="mm-word-chips"></div>
+          </div>
+        </section>
+
+        <!-- View 2: Unit Flashcard Auto-Play -->
+        <section id="view-flashcard" class="view-panel" aria-label="單元字卡自動播放">
+          <div class="fc-control-bar">
+            <div class="fc-primary-actions">
+              <button id="btn-autoplay" class="btn btn-primary btn-play-main" type="button">
+                ▶ 開始自動播放 (Space)
+              </button>
+              <span id="autoplay-status-pill" class="status-pill">待機中</span>
+            </div>
+
+            <div class="fc-settings-grid">
+              <label class="ctrl-item">
+                <span>顯示方式</span>
+                <select id="fc-display-mode" class="compact-select">
+                  <option value="flip" selected>翻面記憶模式（先英→翻中文）</option>
+                  <option value="sync">同步顯示模式（英中同時看）</option>
+                </select>
+              </label>
+
+              <label class="ctrl-item">
+                <span>每字朗讀</span>
+                <select id="fc-repeat" class="compact-select">
+                  <option value="1" selected>1 次</option>
+                  <option value="2">2 次</option>
+                </select>
+              </label>
+
+              <label class="ctrl-item">
+                <span>停留秒數</span>
+                <select id="fc-delay" class="compact-select">
+                  <option value="1500">1.5 秒</option>
+                  <option value="2000" selected>2.0 秒</option>
+                  <option value="3000">3.0 秒</option>
+                  <option value="4000">4.0 秒</option>
+                  <option value="5000">5.0 秒</option>
+                </select>
+              </label>
+
+              <label class="ctrl-item">
+                <span>語速</span>
+                <select id="fc-rate" class="compact-select">
+                  <option value="0.75">0.75x 慢速</option>
+                  <option value="0.9">0.9x 教學</option>
+                  <option value="1.0" selected>1.0x 常速</option>
+                  <option value="1.15">1.15x 稍快</option>
+                </select>
+              </label>
+
+              <label class="ctrl-item">
+                <span>播完行為</span>
+                <select id="fc-on-end" class="compact-select">
+                  <option value="stop" selected>播完本單元停止</option>
+                  <option value="loop">本單元循環播放</option>
+                  <option value="next">自動接續下一單元</option>
+                </select>
+              </label>
+
+              <label class="ctrl-checkbox" title="自動播放時在朗讀單字後同時朗讀英文例句">
+                <input id="fc-speak-ex" type="checkbox" />
+                <span>含例句朗讀</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="fc-progress-row">
+            <span id="fc-progress-text" class="fc-progress-text">Unit 001 • 第 1 / 15 個單字</span>
+            <div class="fc-progress-track">
+              <div id="fc-progress-fill" class="fc-progress-fill" style="width: 6.6%"></div>
+            </div>
+            <span class="shortcut-hint hide-md">快捷鍵：Space 播放/暫停 • ← → 換字 • ↑ ↓ 翻面 • R 朗讀</span>
+          </div>
+
+          <div class="fc-stage">
+            <div id="flashcard-el" class="flashcard" tabindex="0" role="button" aria-label="單字卡，點擊可翻面">
+              <div class="fc-face fc-front">
+                <div class="fc-card-top">
+                  <span id="fc-num-front" class="fc-num-badge">#1</span>
+                  <span id="fc-pos-front" class="fc-pos-pill">(n.)</span>
+                  <span id="fc-unit-mini-front" class="fc-unit-mini">Unit 001 人生階段</span>
+                </div>
+
+                <div class="fc-front-center">
+                  <div id="fc-en-front" class="fc-word-en">baby</div>
+                  <button id="btn-speak-front" class="btn btn-speak" type="button" title="朗讀單字 (R)">
+                    🔊 朗讀 (R)
+                  </button>
+
+                  <div id="fc-sync-details" class="fc-sync-details hidden">
+                    <div id="fc-zh-sync" class="fc-word-zh-sync">嬰兒</div>
+                    <div id="fc-ex-sync" class="fc-ex-box hidden">
+                      <p id="fc-ex-en-sync" class="fc-ex-en"></p>
+                      <p id="fc-ex-zh-sync" class="fc-ex-zh"></p>
+                    </div>
+                  </div>
+                </div>
+
+                <div id="fc-flip-hint" class="fc-card-bottom-hint">點擊卡片或按 ↑ / ↓ 翻看中文解釋與例句</div>
+              </div>
+
+              <div class="fc-face fc-back">
+                <div class="fc-card-top">
+                  <span id="fc-num-back" class="fc-num-badge">#1</span>
+                  <div class="fc-back-head">
+                    <span id="fc-en-back" class="fc-word-en-sm">baby</span>
+                    <span id="fc-pos-back" class="fc-pos-pill">(n.)</span>
+                    <button id="btn-speak-back" class="btn btn-xs btn-speak-sm" type="button" title="朗讀單字 (R)">🔊</button>
+                  </div>
+                  <span id="fc-unit-mini-back" class="fc-unit-mini">Unit 001</span>
+                </div>
+
+                <div class="fc-back-center">
+                  <div id="fc-zh-back" class="fc-word-zh">嬰兒</div>
+                  <div id="fc-ex-back" class="fc-ex-box hidden">
+                    <div class="fc-ex-row">
+                      <p id="fc-ex-en-back" class="fc-ex-en"></p>
+                      <button id="btn-speak-ex-back" class="btn btn-xs btn-outline" type="button" title="朗讀例句">🔊 例句</button>
+                    </div>
+                    <p id="fc-ex-zh-back" class="fc-ex-zh"></p>
+                  </div>
+                </div>
+
+                <div class="fc-card-bottom-hint">點擊卡片可翻回正面英文</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="fc-nav-row">
+            <button id="btn-fc-prev" class="btn btn-outline btn-lg" type="button">◀ 上一個 (←)</button>
+            <button id="btn-fc-flip" class="btn btn-secondary btn-lg" type="button">🔄 翻面 (↑/↓)</button>
+            <button id="btn-fc-speak" class="btn btn-accent btn-lg" type="button">🔊 唸一次 (R)</button>
+            <button id="btn-fc-next" class="btn btn-outline btn-lg" type="button">下一個 (→) ▶</button>
+          </div>
+
+          <div class="fc-chips-wrap">
+            <div id="fc-word-chips" class="fc-word-chips"></div>
+          </div>
+        </section>
+
+        <!-- View 3: Unit Word Table & Quick Quiz -->
+        <section id="view-table" class="view-panel" aria-label="單元單字總表與抽考">
+          <div class="table-toolbar">
+            <div class="table-title-group">
+              <h2 id="tbl-unit-heading">Unit 001 人生階段 Life Stages</h2>
+              <span id="tbl-word-count" class="count-badge">15 字</span>
+            </div>
+
+            <div class="table-actions">
+              <div class="segmented-control" id="quiz-mask-group" role="group" aria-label="遮罩抽考模式">
+                <button class="seg-btn active" data-mask="none" type="button">👁️ 全部顯示</button>
+                <button class="seg-btn" data-mask="hide-zh" type="button">🙈 遮住中文（考中譯）</button>
+                <button class="seg-btn" data-mask="hide-en" type="button">🙈 遮住英文（考拼字）</button>
+              </div>
+
+              <button id="btn-random-quiz" class="btn btn-outline" type="button">🔀 隨機抽考一題</button>
+              <button id="btn-table-autoplay" class="btn btn-primary" type="button">▶ 依序朗讀全表</button>
+            </div>
+          </div>
+
+          <div class="table-card">
+            <table class="vocab-table">
+              <thead>
+                <tr>
+                  <th class="col-num">#</th>
+                  <th class="col-en">英文單字</th>
+                  <th class="col-pos">詞性</th>
+                  <th class="col-zh">中文意思</th>
+                  <th class="col-ex">課本例句（英 / 中）</th>
+                </tr>
+              </thead>
+              <tbody id="vocab-table-body"></tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- Fullscreen Lightbox for Mind Map Inspection -->
+  <div id="mm-lightbox" class="lightbox hidden" role="dialog" aria-modal="true" aria-label="心智圖放大檢視">
+    <div class="lightbox-toolbar">
+      <span id="lb-title" class="lb-title">Unit 001 人生階段</span>
+      <div class="lb-controls">
+        <button id="lb-toggle-lang" class="btn btn-sm btn-secondary" type="button">切換 全英 / 中英對照</button>
+        <button id="lb-close" class="btn btn-sm btn-accent" type="button">✕ 關閉 (Esc)</button>
+      </div>
+    </div>
+    <div class="lightbox-body">
+      <img id="lb-img" src="" alt="放大心智圖" />
+    </div>
+  </div>
+
+  <script src="vocab_data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
